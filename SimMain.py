@@ -13,24 +13,28 @@ FOOD = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'food_app
 NUM_OF_APPLES = 100
 
 
-def draw_window(food):
+def draw_window(food, blob_population):
     WIN.fill(SCREEN_COLOR)
-    for apple in food.food_storage:
-        WIN.blit(FOOD, apple)
+    for apple in food:
+        WIN.blit(FOOD, apple.position)
+    for blob in blob_population:
+        pygame.draw.circle(WIN, blob.color, (blob.x_pos, blob.y_pos), blob.size)
     pygame.display.update()
 
 def main():
     pygame.init()
     clock = pygame.time.Clock()
-    food = SimEngine.Food()
+    food_storage = SimEngine.Population().store_food(NUM_OF_APPLES)  # spawns the number of foods into the environment
+    blob_population = SimEngine.Population().blobs
     run = True
-    food.store_food(NUM_OF_APPLES)  # spawns the number of foods into the environment
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-        draw_window(food)
+        for blob in blob_population:
+            blob.move()
+        draw_window(food_storage, blob_population)
     pygame.quit()
 
 
