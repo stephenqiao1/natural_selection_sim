@@ -16,7 +16,7 @@ NUM_OF_APPLES = 100
 def draw_window(food, blob_population):
     WIN.fill(SCREEN_COLOR)
     for apple in food:
-        WIN.blit(FOOD, apple.position)
+        WIN.blit(FOOD, (apple.x_pos, apple.y_pos))
     for blob in blob_population:
         pygame.draw.circle(WIN, blob.color, (blob.x_pos, blob.y_pos), blob.size)
     pygame.display.update()
@@ -33,7 +33,7 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
         for blob in blob_population:
-            blob.move()
+            blob.move_in_space()
         draw_window(food_storage, blob_population)
     pygame.quit()
 
