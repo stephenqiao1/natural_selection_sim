@@ -3,6 +3,7 @@ import random
 class Food():
     def __init__(self, x, y):
         self.food_score = 1
+        self.radius = 5
         self.x_pos = x
         self.y_pos = y
 
@@ -11,7 +12,7 @@ class Blob():
         self.speed = speed
         self.size = radius
         self.sense = sense
-        self.energy = 100
+        self.food_eaten = 0
         self.color = color
         self.x_pos = x_pos
         self.y_pos = y_pos
@@ -43,7 +44,7 @@ class Blob():
 class Population():
     def __init__(self):
         self.foods = []
-        self.blobs = [Blob(10, 10, 10, (200, 200, 200), 10, 10)]
+        self.blobs = [Blob(10, 10, 10, (200, 200, 200), 10, 10), Blob(6, 10, 10, (200, 200, 200), 50, 25)]
 
     def store_food(self, amount):  # creates a list of all the apples needed, each with different coordinates
         for x in range(amount):
@@ -53,4 +54,20 @@ class Population():
 
     def replicate_blobs(self, blob):  # adds a blob to the population
         self.blobs.append(blob)
+
+    # collision system
+    def eat_food(self, food_population, blob_population):
+        for blob in blob_population:
+            for food in food_population:
+                is_collision = self.check_collision(blob, food)
+                if is_collision:
+                    food_population.remove(food)
+
+    def check_collision(self, blob, food):
+        distance = (((blob.x_pos-food.x_pos) ** 2) + ((blob.y_pos-food.y_pos) ** 2)) ** 0.5
+        if distance < (blob.size + food.radius) / 2.0:
+            return True
+        else:
+            return False
+        
 
