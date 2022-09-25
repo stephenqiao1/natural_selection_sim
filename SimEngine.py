@@ -1,5 +1,10 @@
 import random
 
+DIE = 0
+LIVE = 1
+REPLICATE = 2
+WIDTH, HEIGHT = 1400, 800
+
 class Food():
     def __init__(self, x, y):
         self.food_score = 1
@@ -12,12 +17,13 @@ class Blob():
         self.speed = speed
         self.size = radius
         self.sense = sense
-        self.food_eaten = 0
+        self.foods_eaten = 0
         self.color = color
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.x_dir = True  # True if it is moving in the right direction, otherwise False if going left
         self.y_dir = True  # True if it is moving in the downwards direction, otherwise False if going up
+        self.home = (0, 0)
 
     def move_in_space(self):
         # x-direction
@@ -25,35 +31,106 @@ class Blob():
             self.x_pos += self.speed
         elif not self.x_dir:
             self.x_pos += -1 * self.speed
-        if self.x_pos >= 800:
+        if self.x_pos >= WIDTH:
             self.x_dir = False
         elif self.x_pos <= 0:
             self.x_dir = True
 
         # y-direction
         if self.y_dir:
-            self.y_pos += 1.5 * self.speed
+            self.y_pos += self.speed
         elif not self.y_dir:
-            self.y_pos += -1.5 * self.speed
-        if self.y_pos >= 800:
+            self.y_pos += -1 * self.speed
+        if self.y_pos >= HEIGHT:
             self.y_dir = False
         elif self.y_pos <= 0:
             self.y_dir = True
 
 
+    def move_to_home(self):
+        self.set_closest_home()
+
+        x_dist = abs(self.x_pos - self.home[0])
+        y_dist = abs(self.y_pos - self.home[1])
+
+        if x_dist < y_dist:  # move in the horizontal direction
+            if self.x_pos < 0:  # won't leave screen off the left side
+                self.x_pos = 10
+            if self.x_pos > WIDTH:
+                self.x_pos = WIDTH - 10
+            if self.x_pos < (WIDTH / 2):  # move left
+                self.x_pos += -1 * self.speed
+            else:
+                self.x_pos += self.speed  # move right
+        elif y_dist < x_dist:  # move in the vertical direction
+            if self.y_pos < 0:
+                self.y_pos = 10
+            if self.y_pos > HEIGHT:
+                self.y_pos = HEIGHT - 10
+            if self.y_pos < (HEIGHT / 2):  # move up
+                self.y_pos += -1 * self.speed
+            else:
+                self.y_pos += self.speed  # move down
+
+    def set_closest_home(self):
+        dist_top_edge = self.y_pos
+        dist_bot_edge = HEIGHT - self.y_pos
+        dist_left_edge = self.x_pos
+        dist_right_edge = WIDTH - self.x_pos
+
+        dist_all_edges = [dist_top_edge, dist_bot_edge, dist_left_edge, dist_right_edge]
+
+        top_home_pos = (self.x_pos, 0)  # index 0
+        bot_home_pos = (self.x_pos, HEIGHT)  # index 1
+        left_home_pos = (0, self.y_pos)  # index 2
+        right_home_pos = (WIDTH, self.y_pos)  # index 3
+
+        all_home_pos = [top_home_pos, bot_home_pos, left_home_pos, right_home_pos]
+
+        current_dist = 2000  # this will keep track of the lowest distance
+        index = 0
+
+        for edge in dist_all_edges:
+            if edge < current_dist:
+                current_dist = edge
+                self.home = all_home_pos[index]
+                return
+            index += 1
+
+
+
 class Population():
     def __init__(self):
         self.foods = []
-        self.blobs = [Blob(10, 10, 10, (200, 200, 200), 10, 10), Blob(6, 10, 10, (200, 200, 200), 50, 25)]
+        self.blobs = [Blob(10, 10, 10, (200, 200, 200), 400, 500)]
 
     def store_food(self, amount):  # creates a list of all the apples needed, each with different coordinates
         for x in range(amount):
-            self.foods.append(Food(random.randint(0, 800), random.randint(0, 800)))
+            self.foods.append(Food(random.randint(0, WIDTH), random.randint(0, HEIGHT)))
 
         return self.foods
 
-    def replicate_blobs(self, blob):  # adds a blob to the population
-        self.blobs.append(blob)
+
+    def move_all_blobs_home(self):
+        for blob in self.blobs:
+            blob.move_to_home()
+
+
+    def move_all_blobs(self):
+        for blob in self.blobs:
+            blob.move_in_space()
+
+    '''
+    Decides the life of the blob at end of day
+    '''
+    def decide_blobs_life(self, blob_population):
+        for blob in blob_population:
+            if blob.foods_eaten == DIE:
+                blob_population.remove(blob)
+            if blob.foods_eaten >= REPLICATE:
+                new_blob = Blob(blob.speed, blob.size, blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
+                blob_population.append(new_blob)
+    
 
     # collision system
     def eat_food(self, food_population, blob_population):
@@ -62,6 +139,8 @@ class Population():
                 is_collision = self.check_collision(blob, food)
                 if is_collision:
                     food_population.remove(food)
+                    blob.foods_eaten += 1
+                    print(blob.foods_eaten)
 
     def check_collision(self, blob, food):
         distance = (((blob.x_pos-food.x_pos) ** 2) + ((blob.y_pos-food.y_pos) ** 2)) ** 0.5
@@ -69,5 +148,3 @@ class Population():
             return True
         else:
             return False
-        
-
