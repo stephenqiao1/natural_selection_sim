@@ -29,9 +29,9 @@ class Blob():
     def move_in_space(self):
         # x-direction
         if self.x_dir:
-            self.x_pos += self.speed
+            self.x_pos += random.random() * self.speed
         elif not self.x_dir:
-            self.x_pos += -1 * self.speed
+            self.x_pos += -1 * random.random() * self.speed
         if self.x_pos >= WIDTH:
             self.x_dir = False
         elif self.x_pos <= 0:
@@ -39,9 +39,9 @@ class Blob():
 
         # y-direction
         if self.y_dir:
-            self.y_pos += self.speed
+            self.y_pos += random.random() * self.speed
         elif not self.y_dir:
-            self.y_pos += -1 * self.speed
+            self.y_pos += -1 * random.random() * self.speed
         if self.y_pos >= HEIGHT:
             self.y_dir = False
         elif self.y_pos <= 0:
@@ -99,11 +99,10 @@ class Blob():
             index += 1
 
 
-
 class Population():
     def __init__(self):
         self.foods = []
-        self.blobs = [Blob(10, 10, 10, (200, 200, 200), 400, 500)]
+        self.blobs = [Blob(10, 10, 10, (200, 200, 200), 400, 500), Blob(10, 10, 10, (200, 200, 200), 20, 350)]
         self.blobs_population_size = 1
 
     def store_food(self, amount):  # creates a list of all the apples needed, each with different coordinates
@@ -129,11 +128,12 @@ class Population():
         for blob in blob_population:
             if blob.foods_eaten == DIE and blob.age != 0:
                 blob_population.remove(blob)
-                print('blob died')       
-        for x in range(population_size):
-            new_blob = Blob(blob.speed, blob.size, blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
-            if len(blob_population) < population_size:
-                blob_population.append(new_blob)
+                print('blob died')
+        if population_size > 0:       
+            for x in range(population_size):
+                new_blob = self.mutate(blob_population[x])
+                if len(blob_population) < population_size:
+                    blob_population.append(new_blob)
     
     def update_blob_population(self):
         for blob in self.blobs:
@@ -141,9 +141,23 @@ class Population():
                 self.blobs_population_size += 1
             elif blob.foods_eaten == DIE and blob.age != 0:
                 self.blobs_population_size -= 1
+                     
                 
+    '''
+    Mutation system
+    '''
+    def mutate(self, blob): 
+        if random.random() <= 0.05: # 5% mutation rate
+            mutation_option = random.randint(0, 2)
+            if mutation_option == 0:  # mutate speed gene
+                return Blob(random.uniform(-100, 100), blob.size, blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
+            elif mutation_option == 1:  # mutate size gene
+                return Blob(blob.speed, random.uniform(0, 100), blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
+            elif mutation_option == 2:  # mutate sense gene
+                return Blob(blob.speed, blob.size, random.uniform(0, 50), blob.color, blob.x_pos, random.randint(0, HEIGHT))
+        else:
+            return Blob(blob.speed, blob.size, blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
         
-
     # collision system
     def eat_food(self, food_population, blob_population):
         for blob in blob_population:
