@@ -7,11 +7,11 @@ WIDTH, HEIGHT = 1400, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Natural Selection Simulation')
 
-SCREEN_COLOR = pygame.Color('antiquewhite')
+SCREEN_COLOR = pygame.Color('black')
 FPS = 60
 
 FOOD = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'food_apple.png')), (20, 20))
-NUM_OF_APPLES = 5
+NUM_OF_APPLES = 100
 
 REST_TIME = 10
 SETUP_TIME = 15
@@ -43,15 +43,6 @@ def day_cycle(elapsed_time, updated):
             populations.store_food(NUM_OF_APPLES)
         populations.decide_blobs_life(blob_population, populations.blobs_population_size)
 
-
-def run_once(f):
-    def wrapper(*args, **kwargs):
-        if not wrapper.has_run:
-            wrapper.has_run = True
-            return f(*args, **kwargs)
-    wrapper.has_run = False
-    return wrapper
-
 def main():
     pygame.init()
     pygame.font.init()
@@ -63,7 +54,7 @@ def main():
     run = True
     while run:
         clock.tick(FPS)
-        text_surface = my_font.render('Day ' + str(day), False, (0, 0, 0))
+        text_surface = my_font.render('Day ' + str(day), False, (255, 255, 255))
         elapsed_time = round(time.time() - start_time)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -82,7 +73,6 @@ def main():
                 blob.foods_eaten = 0
             start_time = time.time()
             updated = False
-        print(elapsed_time)
         draw_window(food_storage, blob_population, text_surface)
     pygame.quit()
 

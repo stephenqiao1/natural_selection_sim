@@ -27,51 +27,47 @@ class Blob():
         self.age = 0
 
     def move_in_space(self):
+        num = random.randint(0, 1000)
         # x-direction
-        if self.x_dir:
-            self.x_pos += random.random() * self.speed
-        elif not self.x_dir:
-            self.x_pos += -1 * random.random() * self.speed
+        self.x_pos += random.uniform(-1, 1) * self.speed
+            
         if self.x_pos >= WIDTH:
-            self.x_dir = False
+            self.x_pos = WIDTH
         elif self.x_pos <= 0:
-            self.x_dir = True
+            self.x_pos = 0
 
         # y-direction
-        if self.y_dir:
-            self.y_pos += random.random() * self.speed
-        elif not self.y_dir:
-            self.y_pos += -1 * random.random() * self.speed
+        self.y_pos += 1 * random.uniform(-1, 1) * self.speed
+            
         if self.y_pos >= HEIGHT:
-            self.y_dir = False
+            self.y_pos = HEIGHT
         elif self.y_pos <= 0:
-            self.y_dir = True
+            self.y_pos = 0
 
-
-    def move_to_home(self):
+    def move_to_home(self): # needs to change 
         self.set_closest_home()
-
-        x_dist = abs(self.x_pos - self.home[0])
-        y_dist = abs(self.y_pos - self.home[1])
-
-        if x_dist < y_dist:  # move in the horizontal direction
-            if self.x_pos < 0:  # won't leave screen off the left side
-                self.x_pos = 10
-            if self.x_pos > WIDTH:
-                self.x_pos = WIDTH - 10
-            if self.x_pos < (WIDTH / 2):  # move left
-                self.x_pos += -1 * self.speed
-            else:
-                self.x_pos += self.speed  # move right
-        elif y_dist < x_dist:  # move in the vertical direction
-            if self.y_pos < 0:
+        
+        if self.home == (self.x_pos, 0):
+            if self.y_pos <= 10:
                 self.y_pos = 10
-            if self.y_pos > HEIGHT:
-                self.y_pos = HEIGHT - 10
-            if self.y_pos < (HEIGHT / 2):  # move up
-                self.y_pos += -1 * self.speed
             else:
-                self.y_pos += self.speed  # move down
+                self.y_pos += -1 * self.speed
+        elif self.home == (self.x_pos, HEIGHT):
+            if self.y_pos >= (HEIGHT - 10):
+                self.y_pos = HEIGHT - 10
+            else:
+                self.y_pos += 1 * self.speed
+        elif self.home == (0, self.y_pos):
+            if self.x_pos <= 10:
+                self.x_pos = 10
+            else:
+                self.x_pos += 1 * self.speed
+        elif self.home == (WIDTH, self.y_pos):
+            if self.x_pos >= WIDTH - 10:
+                self.x_pos = WIDTH - 10
+            else:
+                self.x_pos += -1 * self.speed
+                
 
     def set_closest_home(self):
         dist_top_edge = self.y_pos
@@ -95,14 +91,14 @@ class Blob():
             if edge < current_dist:
                 current_dist = edge
                 self.home = all_home_pos[index]
-                return
             index += 1
+        
 
 
 class Population():
     def __init__(self):
         self.foods = []
-        self.blobs = [Blob(10, 10, 10, (200, 200, 200), 400, 500), Blob(10, 10, 10, (200, 200, 200), 20, 350)]
+        self.blobs = [Blob(10, 5, 10, (0, 255, 0), 400, 500)]
         self.blobs_population_size = 1
 
     def store_food(self, amount):  # creates a list of all the apples needed, each with different coordinates
@@ -128,7 +124,6 @@ class Population():
         for blob in blob_population:
             if blob.foods_eaten == DIE and blob.age != 0:
                 blob_population.remove(blob)
-                print('blob died')
         if population_size > 0:       
             for x in range(population_size):
                 new_blob = self.mutate(blob_population[x])
@@ -139,8 +134,10 @@ class Population():
         for blob in self.blobs:
             if blob.foods_eaten >= REPLICATE:
                 self.blobs_population_size += 1
+                print('blob replicated')
             elif blob.foods_eaten == DIE and blob.age != 0:
                 self.blobs_population_size -= 1
+                print('blob died')
                      
                 
     '''
@@ -150,13 +147,14 @@ class Population():
         if random.random() <= 0.05: # 5% mutation rate
             mutation_option = random.randint(0, 2)
             if mutation_option == 0:  # mutate speed gene
-                return Blob(random.uniform(-100, 100), blob.size, blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
+                return Blob(random.uniform(-100, 100), blob.size, blob.sense, blob.color, blob.x_pos, blob.y_pos)
             elif mutation_option == 1:  # mutate size gene
-                return Blob(blob.speed, random.uniform(0, 100), blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
+                return Blob(blob.speed, random.uniform(0, 100), blob.sense, blob.color, blob.x_pos, blob.y_pos)
             elif mutation_option == 2:  # mutate sense gene
-                return Blob(blob.speed, blob.size, random.uniform(0, 50), blob.color, blob.x_pos, random.randint(0, HEIGHT))
+                return Blob(blob.speed, blob.size, random.uniform(0, 50), blob.color, blob.x_pos, blob.y_pos)
+            print('mutation!')
         else:
-            return Blob(blob.speed, blob.size, blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
+            return Blob(blob.speed, blob.size, blob.sense, blob.color, blob.x_pos, blob.y_pos)
         
     # collision system
     def eat_food(self, food_population, blob_population):
