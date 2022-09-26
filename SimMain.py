@@ -33,13 +33,16 @@ def draw_window(food, blob_population, text):
 '''
 Day and night system
 '''
-def end_day(elapsed_time):
-    populations.move_all_blobs_home()  # move all blobs to their home spot
-    if elapsed_time == SETUP_TIME:
+def day_cycle(elapsed_time):
+    if elapsed_time >= REST_TIME and elapsed_time < SETUP_TIME:  # from 10s to 15s
+        populations.move_all_blobs_home()  # move all blobs to their home spot
+        populations.update_blob_population()   
+    elif elapsed_time == SETUP_TIME:
         if len(food_storage) < NUM_OF_APPLES:
             populations.store_food(NUM_OF_APPLES)
-        populations.decide_blobs_life(blob_population)
-        print('ran')
+        populations.decide_blobs_life(blob_population, populations.blobs_population_size)
+    elif elapsed_time >= 0 and elapsed_time < REST_TIME:
+        populations.move_all_blobs()
 
 
 def main():
@@ -58,15 +61,14 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
         populations.eat_food(food_storage, blob_population)
-        if elapsed_time > REST_TIME:
-            end_day(elapsed_time)
-            if elapsed_time == RESET_TIME:  # resets timer
-                day += 1
-                for blob in blob_population:
-                    blob.foods_eaten = 0
-                start_time = time.time()
-        else:
-            populations.move_all_blobs()
+        day_cycle(elapsed_time)
+        if elapsed_time == RESET_TIME:  # resets timer
+            print("blob population: " + str(populations.blobs_population_size))
+            day += 1
+            for blob in blob_population:
+                blob.foods_eaten = 0
+                blob.age += 1
+            start_time = time.time()
         print(elapsed_time)
         draw_window(food_storage, blob_population, text_surface)
     pygame.quit()

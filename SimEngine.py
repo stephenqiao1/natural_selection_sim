@@ -24,6 +24,7 @@ class Blob():
         self.x_dir = True  # True if it is moving in the right direction, otherwise False if going left
         self.y_dir = True  # True if it is moving in the downwards direction, otherwise False if going up
         self.home = (0, 0)
+        self.age = 0
 
     def move_in_space(self):
         # x-direction
@@ -103,6 +104,7 @@ class Population():
     def __init__(self):
         self.foods = []
         self.blobs = [Blob(10, 10, 10, (200, 200, 200), 400, 500)]
+        self.blobs_population_size = 1
 
     def store_food(self, amount):  # creates a list of all the apples needed, each with different coordinates
         for x in range(amount):
@@ -123,14 +125,22 @@ class Population():
     '''
     Decides the life of the blob at end of day
     '''
-    def decide_blobs_life(self, blob_population):
+    def decide_blobs_life(self, blob_population, population_size):
         for blob in blob_population:
-            if blob.foods_eaten == DIE:
+            if blob.foods_eaten == DIE and blob.age != 0:
                 blob_population.remove(blob)
-            if blob.foods_eaten >= REPLICATE:
-                new_blob = Blob(blob.speed, blob.size, blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
+                print('blob died')       
+        for x in range(population_size):
+            new_blob = Blob(blob.speed, blob.size, blob.sense, blob.color, blob.x_pos, random.randint(0, HEIGHT))
+            if len(blob_population) < population_size:
                 blob_population.append(new_blob)
     
+    def update_blob_population(self):
+        for blob in self.blobs:
+            if blob.foods_eaten >= REPLICATE:
+                self.blobs_population_size += 1
+                blob.foods_eaten = 0
+        
 
     # collision system
     def eat_food(self, food_population, blob_population):
@@ -140,7 +150,6 @@ class Population():
                 if is_collision:
                     food_population.remove(food)
                     blob.foods_eaten += 1
-                    print(blob.foods_eaten)
 
     def check_collision(self, blob, food):
         distance = (((blob.x_pos-food.x_pos) ** 2) + ((blob.y_pos-food.y_pos) ** 2)) ** 0.5
