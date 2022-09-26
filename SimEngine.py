@@ -139,7 +139,9 @@ class Population():
         for blob in self.blobs:
             if blob.foods_eaten >= REPLICATE:
                 self.blobs_population_size += 1
-                blob.foods_eaten = 0
+            elif blob.foods_eaten == DIE and blob.age != 0:
+                self.blobs_population_size -= 1
+                
         
 
     # collision system

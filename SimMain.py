@@ -11,7 +11,7 @@ SCREEN_COLOR = pygame.Color('antiquewhite')
 FPS = 60
 
 FOOD = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'food_apple.png')), (20, 20))
-NUM_OF_APPLES = 50   
+NUM_OF_APPLES = 1 
 
 REST_TIME = 10
 SETUP_TIME = 15
