@@ -4,6 +4,8 @@ DIE = 0
 LIVE = 1
 REPLICATE = 2
 WIDTH, HEIGHT = 1400, 800
+ENERGY_LEVEL = 1000000000 # 1 billion
+MUTATION_RATE = 0.05 # 3% mutation rate
 
 class Food():
     def __init__(self, x, y):
@@ -13,10 +15,10 @@ class Food():
         self.y_pos = y
 
 class Blob():
-    def __init__(self, speed, radius, sense, color, x_pos, y_pos):
+    def __init__(self, speed, radius, color, x_pos, y_pos):
         self.speed = speed
         self.size = radius
-        self.sense = sense
+        self.energy = ENERGY_LEVEL
         self.foods_eaten = 0
         self.color = color
         self.x_pos = x_pos
@@ -27,22 +29,25 @@ class Blob():
         self.age = 0
 
     def move_in_space(self):
-        num = random.randint(0, 1000)
-        # x-direction
-        self.x_pos += random.uniform(-1, 1) * self.speed
+        self.energy_depletion()
+        if self.energy > 0:
+             # x-direction
+            self.x_pos += random.uniform(-1, 1) * self.speed
             
-        if self.x_pos >= WIDTH:
-            self.x_pos = WIDTH
-        elif self.x_pos <= 0:
-            self.x_pos = 0
+            if self.x_pos >= WIDTH:
+                self.x_pos = WIDTH
+            elif self.x_pos <= 0:
+                self.x_pos = 0
 
-        # y-direction
-        self.y_pos += 1 * random.uniform(-1, 1) * self.speed
+            # y-direction
+            self.y_pos += 1 * random.uniform(-1, 1) * self.speed
             
-        if self.y_pos >= HEIGHT:
-            self.y_pos = HEIGHT
-        elif self.y_pos <= 0:
-            self.y_pos = 0
+            if self.y_pos >= HEIGHT:
+                self.y_pos = HEIGHT
+            elif self.y_pos <= 0:
+                self.y_pos = 0
+        
+        
 
     def move_to_home(self): # needs to change 
         self.set_closest_home()
@@ -92,13 +97,18 @@ class Blob():
                 current_dist = edge
                 self.home = all_home_pos[index]
             index += 1
+            
+    '''
+    Energy Cost System
+    '''
+    def energy_depletion(self):
+        self.energy -= (self.size ** 3) * (self.speed ** 2)
         
-
 
 class Population():
     def __init__(self):
         self.foods = []
-        self.blobs = [Blob(10, 5, 10, (0, 255, 0), 400, 500)]
+        self.blobs = [Blob(10, 5, (0, 255, 0), 400, 500)]
         self.blobs_population_size = 1
 
     def store_food(self, amount):  # creates a list of all the apples needed, each with different coordinates
@@ -144,17 +154,15 @@ class Population():
     Mutation system
     '''
     def mutate(self, blob): 
-        if random.random() <= 0.05: # 5% mutation rate
-            mutation_option = random.randint(0, 2)
+        if random.random() <= MUTATION_RATE: 
+            mutation_option = random.randint(0, 1)
             if mutation_option == 0:  # mutate speed gene
-                return Blob(random.uniform(-100, 100), blob.size, blob.sense, blob.color, blob.x_pos, blob.y_pos)
+                return Blob(random.uniform(0, 50), blob.size, (random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)), blob.x_pos, blob.y_pos)
             elif mutation_option == 1:  # mutate size gene
-                return Blob(blob.speed, random.uniform(0, 100), blob.sense, blob.color, blob.x_pos, blob.y_pos)
-            elif mutation_option == 2:  # mutate sense gene
-                return Blob(blob.speed, blob.size, random.uniform(0, 50), blob.color, blob.x_pos, blob.y_pos)
+                return Blob(blob.speed, random.uniform(0, 100), (random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)), blob.x_pos, blob.y_pos)
             print('mutation!')
         else:
-            return Blob(blob.speed, blob.size, blob.sense, blob.color, blob.x_pos, blob.y_pos)
+            return Blob(blob.speed, blob.size, blob.color, blob.x_pos, blob.y_pos)
         
     # collision system
     def eat_food(self, food_population, blob_population):

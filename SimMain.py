@@ -11,11 +11,12 @@ SCREEN_COLOR = pygame.Color('black')
 FPS = 60
 
 FOOD = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'food_apple.png')), (20, 20))
-NUM_OF_APPLES = 100
+NUM_OF_APPLES = 1000
 
 REST_TIME = 10
-SETUP_TIME = 15
-RESET_TIME = 20
+SETUP_TIME = 12
+RESET_TIME = 14
+ENERGY_LEVEL = 1000000000 # 1 billion
 
 populations = SimEngine.Population()
 food_storage = populations.store_food(NUM_OF_APPLES)  # spawns the number of foods into the environment
@@ -71,6 +72,7 @@ def main():
             for blob in blob_population:
                 blob.age += 1
                 blob.foods_eaten = 0
+                blob.energy = ENERGY_LEVEL
             start_time = time.time()
             updated = False
         draw_window(food_storage, blob_population, text_surface)
