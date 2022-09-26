@@ -4,8 +4,8 @@ DIE = 0
 LIVE = 1
 REPLICATE = 2
 WIDTH, HEIGHT = 1400, 800
-ENERGY_LEVEL = 1000000000 # 1 billion
-MUTATION_RATE = 0.05 # 3% mutation rate
+ENERGY_LEVEL = 10000000000 # 1 billion
+MUTATION_RATE = 0.02 # 3% mutation rate
 
 class Food():
     def __init__(self, x, y):
@@ -108,7 +108,7 @@ class Blob():
 class Population():
     def __init__(self):
         self.foods = []
-        self.blobs = [Blob(10, 5, (0, 255, 0), 400, 500)]
+        self.blobs = [Blob(10, 5, (0, 255, 0), 700, 400)]
         self.blobs_population_size = 1
 
     def store_food(self, amount):  # creates a list of all the apples needed, each with different coordinates
@@ -144,10 +144,8 @@ class Population():
         for blob in self.blobs:
             if blob.foods_eaten >= REPLICATE:
                 self.blobs_population_size += 1
-                print('blob replicated')
             elif blob.foods_eaten == DIE and blob.age != 0:
                 self.blobs_population_size -= 1
-                print('blob died')
                      
                 
     '''
@@ -159,7 +157,7 @@ class Population():
             if mutation_option == 0:  # mutate speed gene
                 return Blob(random.uniform(0, 50), blob.size, (random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)), blob.x_pos, blob.y_pos)
             elif mutation_option == 1:  # mutate size gene
-                return Blob(blob.speed, random.uniform(0, 100), (random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)), blob.x_pos, blob.y_pos)
+                return Blob(blob.speed, random.uniform(0, 50), (random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)), blob.x_pos, blob.y_pos)
             print('mutation!')
         else:
             return Blob(blob.speed, blob.size, blob.color, blob.x_pos, blob.y_pos)
@@ -169,9 +167,10 @@ class Population():
         for blob in blob_population:
             for food in food_population:
                 is_collision = self.check_collision(blob, food)
-                if is_collision:
-                    food_population.remove(food)
-                    blob.foods_eaten += 1
+                if blob.foods_eaten <= 2: # cannot eat anymore food after eating 2 apples
+                    if is_collision:
+                        food_population.remove(food)
+                        blob.foods_eaten += 1
 
     def check_collision(self, blob, food):
         distance = (((blob.x_pos-food.x_pos) ** 2) + ((blob.y_pos-food.y_pos) ** 2)) ** 0.5

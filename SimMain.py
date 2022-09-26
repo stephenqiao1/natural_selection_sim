@@ -16,7 +16,7 @@ NUM_OF_APPLES = 1000
 REST_TIME = 10
 SETUP_TIME = 12
 RESET_TIME = 14
-ENERGY_LEVEL = 1000000000 # 1 billion
+ENERGY_LEVEL = 10000000000 # 10 billion
 
 populations = SimEngine.Population()
 food_storage = populations.store_food(NUM_OF_APPLES)  # spawns the number of foods into the environment
